@@ -12,6 +12,17 @@ data:
         "port": "5000",
         "auth": { "htpasswd": { "path": "/secret/htpasswd" } },
         "accessControl": {
+          "repositories": {
+            "**": {
+              "policies": [
+                {
+                  "users": ["ci-readonly"],
+                  "actions": ["read"]
+                }
+              ],
+              "defaultPolicy": []
+            }
+          },
           "adminPolicy": {
             "users": ["ci"],
             "actions": ["read", "create", "update", "delete"]
