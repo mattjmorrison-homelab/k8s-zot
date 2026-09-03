@@ -6,4 +6,4 @@ metadata:
   annotations:
     argocd.argoproj.io/hook: PostSync
 data:
-{{- (.Files.Glob "scripts/*").AsConfig | nindent 2 }}
+{{- (.Files.Glob "scripts/verify.sh").AsConfig | nindent 2 }}

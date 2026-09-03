@@ -4,4 +4,4 @@ metadata:
   name: zot-verify-checksum
   namespace: zot
 data:
-  checksum: {{ (.Files.Glob "scripts/*").AsConfig | sha256sum | quote }}
+  checksum: {{ (.Files.Glob "scripts/verify.sh").AsConfig | sha256sum | quote }}
