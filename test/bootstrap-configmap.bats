@@ -29,3 +29,9 @@ setup() {
   keys=$(echo "$RENDERED" | yq eval-all 'select(.kind == "ConfigMap" and .metadata.name == "zot-verify-script") | .data | keys | .[]' -)
   [ "$keys" = "verify.sh" ]
 }
+
+@test "zot-bootstrap ServiceAccount applies before the PreSync job that depends on it" {
+  wave=$(echo "$RENDERED" | yq eval-all 'select(.kind == "ServiceAccount" and .metadata.name == "zot-bootstrap") | .metadata.annotations["argocd.argoproj.io/sync-wave"]' -)
+  [ -n "$wave" ]
+  [ "$wave" -lt 0 ]
+}
