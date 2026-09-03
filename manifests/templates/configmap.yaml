@@ -22,6 +22,17 @@ data:
               ],
               "defaultPolicy": []
             }
+            {{- range .Values.serviceConsumers }},
+            "{{ .repository }}": {
+              "policies": [
+                {
+                  "users": ["{{ .name }}"],
+                  "actions": ["read"]
+                }
+              ],
+              "defaultPolicy": []
+            }
+            {{- end }}
           },
           "adminPolicy": {
             "users": ["ci"],
