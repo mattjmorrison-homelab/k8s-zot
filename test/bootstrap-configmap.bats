@@ -30,8 +30,12 @@ setup() {
   [ "$keys" = "verify.sh" ]
 }
 
-@test "zot-bootstrap ServiceAccount applies before the PreSync job that depends on it" {
+@test "zot-bootstrap ServiceAccount is a PreSync hook, applying before the job that depends on it" {
+  hook=$(echo "$RENDERED" | yq eval-all 'select(.kind == "ServiceAccount" and .metadata.name == "zot-bootstrap") | .metadata.annotations["argocd.argoproj.io/hook"]' -)
   wave=$(echo "$RENDERED" | yq eval-all 'select(.kind == "ServiceAccount" and .metadata.name == "zot-bootstrap") | .metadata.annotations["argocd.argoproj.io/sync-wave"]' -)
+  # A plain resource's sync-wave never places it ahead of a PreSync hook --
+  # phase is ordered before wave, so this SA must be a PreSync hook itself.
+  [ "$hook" = "PreSync" ]
   [ -n "$wave" ]
   [ "$wave" -lt 0 ]
 }
