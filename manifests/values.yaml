@@ -2,6 +2,18 @@ image:
   repository: ghcr.io/project-zot/zot
   digest: sha256:542e25be4d32e7879c0cfad93492a93c81b1e059cbd2d30d485d4bd567318234 # v2.1.20
 
+# Bump this to any new string to force the zot pod to restart on the next
+# sync -- needed after rotating zot-htpasswd's value, since that Secret
+# is populated by an ExternalSecret (External Secrets Operator), not
+# rendered by Helm, so checksum/config's template-hash trick below can't
+# see it change. A plain kubectl restart isn't used here: every change to
+# what's running in the cluster goes through a git commit ArgoCD syncs,
+# never a direct cluster command. Real-world use: this exact value was
+# bumped in the PR that restarted zot after the outage described in
+# k8s-zot#5's revert -- the Secret's content was already correct, but
+# nothing had told the Deployment to restart and read it.
+restartTrigger: "2026-09-06-htpasswd-outage-fix"
+
 verify:
   image:
     repository: alpine

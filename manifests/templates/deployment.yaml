@@ -16,6 +16,7 @@ spec:
         app: zot
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        restart-trigger: {{ .Values.restartTrigger | quote }}
     spec:
       serviceAccountName: zot
       containers:
