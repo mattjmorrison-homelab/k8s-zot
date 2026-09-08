@@ -49,19 +49,17 @@ real consumer -- previously tracked as a TODO, since closed.
 
 `zot-verify` (PostSync, `manifests/scripts/verify.sh`) does two checks:
 a plain HTTP request confirming the registry itself is up, and a *real
-authenticated request* as `ci-readonly` against `/v2/_catalog` — this is
-what actually catches a broken htpasswd merge (an empty blob, or a
-garbled/missing `ci-readonly` line), immediately, instead of silently.
+authenticated request* as `zot-verify` against
+`/v2/charts/k8s-ci-rbac/tags/list` — this is what actually catches a
+broken htpasswd merge (an empty blob, or a garbled/missing entry),
+immediately, instead of silently.
 
-This requires `ci-readonly`'s password in **plaintext**, which doesn't
-exist anywhere by default — the only copy that exists is bcrypt-hashed
-(one-way) inside the combined htpasswd blob, unrecoverable from that
-hash. So this repo deliberately keeps a **second, plaintext copy** of
-the same password at `kv/homelab/k8s-zot/ci-readonly-password` in
-OpenBao (`admin-openbao`'s `locals.tf`), readable only by the dedicated
-`zot-verify` role — used for nothing except this one automated check.
-Keep it in sync manually with whatever `ci-readonly`'s real password
-actually is, same as the htpasswd blob's own legacy lines.
+`zot-verify` is its own entry in `serviceConsumers` above, same as every
+real consumer — a dedicated, narrowly-scoped account used for nothing
+except this one check, not a reuse of the shared `ci-readonly` account
+(which other real consumers also rely on). Its password is generated
+and stored the normal way by `zot-bootstrap`, no manual population or
+plaintext-duplication needed.
 
 ## Testing
 

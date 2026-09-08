@@ -11,7 +11,7 @@ setup() {
   [ "$sa" = "zot-verify" ]
 }
 
-@test "verify job has OPENBAO_ADDR set so it can fetch the ci-readonly test credential" {
+@test "verify job has OPENBAO_ADDR set so it can fetch zot-verify's own test credential" {
   addr=$(echo "$RENDERED" | yq eval-all 'select(.kind == "Job" and .metadata.name == "zot-verify") | .spec.template.spec.containers[0].env[] | select(.name == "OPENBAO_ADDR") | .value' -)
   [ -n "$addr" ]
 }
