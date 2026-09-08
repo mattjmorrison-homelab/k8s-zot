@@ -74,3 +74,11 @@ serviceConsumers:
     cred: zot-publish
     repositories: [ui-hdmi-switch, ui-hdmi-switch-test]
     actions: [read, create, update]
+  # Not a real registry consumer -- exists solely so the PostSync verify
+  # job can make a real authenticated request, proving the htpasswd
+  # merge actually produced a working login. Scoped to one narrow,
+  # stable, always-present path (not a broad wildcard like ci-readonly),
+  # matching every other consumer's minimal-scope convention above.
+  - name: zot-verify
+    cred: verify-password
+    repositories: [charts/k8s-ci-rbac]

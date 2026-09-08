@@ -10,11 +10,15 @@ spec:
   backoffLimit: 2
   template:
     spec:
+      serviceAccountName: zot-verify
       restartPolicy: Never
       containers:
         - name: verify
           image: "{{ .Values.verify.image.repository }}@{{ .Values.verify.image.digest }}"
           command: ["/bin/sh", "/scripts/verify.sh"]
+          env:
+            - name: OPENBAO_ADDR
+              value: "http://k8s-openbao.openbao.svc:8200"
           volumeMounts:
             - name: script
               mountPath: /scripts

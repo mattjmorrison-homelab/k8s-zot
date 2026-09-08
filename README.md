@@ -45,6 +45,22 @@ explicit policy. Per-repository scoping of *publish* credentials (not just
 read) is what the `serviceConsumers` mechanism above now provides for every
 real consumer -- previously tracked as a TODO, since closed.
 
+## Post-deploy verification
+
+`zot-verify` (PostSync, `manifests/scripts/verify.sh`) does two checks:
+a plain HTTP request confirming the registry itself is up, and a *real
+authenticated request* as `zot-verify` against
+`/v2/charts/k8s-ci-rbac/tags/list` — this is what actually catches a
+broken htpasswd merge (an empty blob, or a garbled/missing entry),
+immediately, instead of silently.
+
+`zot-verify` is its own entry in `serviceConsumers` above, same as every
+real consumer — a dedicated, narrowly-scoped account used for nothing
+except this one check, not a reuse of the shared `ci-readonly` account
+(which other real consumers also rely on). Its password is generated
+and stored the normal way by `zot-bootstrap`, no manual population or
+plaintext-duplication needed.
+
 ## Testing
 
 Run `make check` to validate the chart manifests and test fixtures via
