@@ -45,6 +45,24 @@ explicit policy. Per-repository scoping of *publish* credentials (not just
 read) is what the `serviceConsumers` mechanism above now provides for every
 real consumer -- previously tracked as a TODO, since closed.
 
+## Post-deploy verification
+
+`zot-verify` (PostSync, `manifests/scripts/verify.sh`) does two checks:
+a plain HTTP request confirming the registry itself is up, and a *real
+authenticated request* as `ci-readonly` against `/v2/_catalog` — this is
+what actually catches a broken htpasswd merge (an empty blob, or a
+garbled/missing `ci-readonly` line), immediately, instead of silently.
+
+This requires `ci-readonly`'s password in **plaintext**, which doesn't
+exist anywhere by default — the only copy that exists is bcrypt-hashed
+(one-way) inside the combined htpasswd blob, unrecoverable from that
+hash. So this repo deliberately keeps a **second, plaintext copy** of
+the same password at `kv/homelab/k8s-zot/ci-readonly-password` in
+OpenBao (`admin-openbao`'s `locals.tf`), readable only by the dedicated
+`zot-verify` role — used for nothing except this one automated check.
+Keep it in sync manually with whatever `ci-readonly`'s real password
+actually is, same as the htpasswd blob's own legacy lines.
+
 ## Testing
 
 Run `make check` to validate the chart manifests and test fixtures via
