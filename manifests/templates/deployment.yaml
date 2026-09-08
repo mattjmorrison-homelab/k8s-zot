@@ -19,6 +19,17 @@ spec:
         restart-trigger: {{ .Values.restartTrigger | quote }}
     spec:
       serviceAccountName: zot
+      initContainers:
+        - name: wait-for-htpasswd-refresh
+          # Forces and confirms a real ExternalSecret refresh before the
+          # main container starts, on every pod start -- closes the race
+          # between the PreSync bootstrap job's write and this Secret's own
+          # independent refreshInterval timer (see wait-for-htpasswd-refresh.sh).
+          image: "{{ .Values.verify.image.repository }}@{{ .Values.verify.image.digest }}"
+          command: ["/bin/sh", "/scripts/wait-for-htpasswd-refresh.sh"]
+          volumeMounts:
+            - name: refresh-script
+              mountPath: /scripts
       containers:
         - name: zot
           image: "{{ .Values.image.repository }}@{{ .Values.image.digest }}"
@@ -51,3 +62,7 @@ spec:
         - name: data
           persistentVolumeClaim:
             claimName: zot
+        - name: refresh-script
+          configMap:
+            name: zot-refresh-htpasswd-script
+            defaultMode: 0555

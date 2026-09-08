@@ -61,6 +61,31 @@ except this one check, not a reuse of the shared `ci-readonly` account
 and stored the normal way by `zot-bootstrap`, no manual population or
 plaintext-duplication needed.
 
+## ExternalSecret-refresh race (fixed)
+
+`zot-htpasswd`'s `ExternalSecret` refreshes on its own independent
+`refreshInterval: 1h` timer, completely decoupled from ArgoCD's
+PreSync/Sync/PostSync hook ordering. The PreSync bootstrap job can write a
+fresh merged htpasswd blob to OpenBao, and a new `zot` pod can start (via
+`restartTrigger`) immediately after, without the mounted Secret actually
+having picked up that fresh write yet -- confirmed live: the bootstrap job
+reported a successful merge, but the pod mounted stale content, and the
+PostSync verify job correctly failed with 401 as a result.
+
+Fixed with a `wait-for-htpasswd-refresh` init container on `zot`'s own
+Deployment (`manifests/scripts/wait-for-htpasswd-refresh.sh`), which runs
+before the main container on every pod start. It patches an annotation on
+the `zot-htpasswd` `ExternalSecret` (any metadata/spec edit changes the hash
+External Secrets Operator compares against `status.syncedResourceVersion`,
+forcing an immediate reconcile regardless of `refreshInterval` -- verified
+against the live v2.10.0 controller source, not assumed) and polls
+`status.refreshTime` until it advances past its pre-patch value, using raw
+calls against the in-cluster Kubernetes API (the pod's own ServiceAccount
+token + CA bundle via `curl`, no `kubectl` binary, matching this repo's
+existing style). `zot`'s ServiceAccount has a narrowly-scoped `Role`/
+`RoleBinding` (`manifests/templates/rbac-zot-refresh.yaml`) granting only
+`get`/`patch` on the one `zot-htpasswd` `ExternalSecret` by name.
+
 ## Testing
 
 Run `make check` to validate the chart manifests and test fixtures via

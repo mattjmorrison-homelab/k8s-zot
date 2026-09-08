@@ -1,0 +1,24 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: zot-htpasswd-refresh
+  namespace: zot
+rules:
+  - apiGroups: ["external-secrets.io"]
+    resources: ["externalsecrets"]
+    verbs: ["get", "patch"]
+    resourceNames: ["zot-htpasswd"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: zot-htpasswd-refresh
+  namespace: zot
+subjects:
+  - kind: ServiceAccount
+    name: zot
+    namespace: zot
+roleRef:
+  kind: Role
+  name: zot-htpasswd-refresh
+  apiGroup: rbac.authorization.k8s.io

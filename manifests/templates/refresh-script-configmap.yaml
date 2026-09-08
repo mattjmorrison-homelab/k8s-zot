@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zot-refresh-htpasswd-script
+  namespace: zot
+data:
+{{- (.Files.Glob "scripts/wait-for-htpasswd-refresh.sh").AsConfig | nindent 2 }}
