@@ -22,3 +22,20 @@ setup() {
   [ "$admin_users" = '["ci"]' ]
   [ "$admin_actions" = '["read","create","update","delete"]' ]
 }
+
+@test "a consumer with multiple repositories gets a distinct accessControl block for each, all naming the same user" {
+  graph_hdmi_users=$(echo "$CONFIG_JSON" | jq -c '.http.accessControl.repositories["graph-hdmi-switch"].policies | map(select(.users == ["graph-hdmi-switch"])) | length')
+  graph_hdmi_test_users=$(echo "$CONFIG_JSON" | jq -c '.http.accessControl.repositories["graph-hdmi-switch-test"].policies | map(select(.users == ["graph-hdmi-switch"])) | length')
+  [ "$graph_hdmi_users" = "1" ]
+  [ "$graph_hdmi_test_users" = "1" ]
+}
+
+@test "a repository shared by multiple consumers groups all their policies under one key, not duplicate keys" {
+  # graph-router is read by k8s-graphql-router and k8s-argocd-image-updater,
+  # and published (read+create+update) by graph-router's own CI -- three
+  # distinct consumers, one repository key.
+  policy_count=$(echo "$CONFIG_JSON" | jq '.http.accessControl.repositories["graph-router"].policies | length')
+  publisher_actions=$(echo "$CONFIG_JSON" | jq -c '.http.accessControl.repositories["graph-router"].policies | map(select(.users == ["graph-router"]))[0].actions')
+  [ "$policy_count" = "3" ]
+  [ "$publisher_actions" = '["read","create","update"]' ]
+}

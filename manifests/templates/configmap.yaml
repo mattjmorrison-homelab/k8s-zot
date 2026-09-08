@@ -22,13 +22,29 @@ data:
               ],
               "defaultPolicy": []
             }
-            {{- range .Values.serviceConsumers }},
-            "{{ .repository }}": {
+            {{- $allRepos := list }}
+            {{- range .Values.serviceConsumers }}
+            {{- range .repositories }}
+            {{- $allRepos = append $allRepos . }}
+            {{- end }}
+            {{- end }}
+            {{- range ($allRepos | uniq) }}
+            {{- $repo := . }}
+            {{- $consumers := list }}
+            {{- range $.Values.serviceConsumers }}
+            {{- if has $repo .repositories }}
+            {{- $consumers = append $consumers . }}
+            {{- end }}
+            {{- end }},
+            "{{ $repo }}": {
               "policies": [
+                {{- range $i, $consumer := $consumers }}
+                {{- if $i }},{{ end }}
                 {
-                  "users": ["{{ .name }}"],
-                  "actions": ["read"]
+                  "users": ["{{ $consumer.name }}"],
+                  "actions": {{ $consumer.actions | default (list "read") | toJson }}
                 }
+                {{- end }}
               ],
               "defaultPolicy": []
             }
