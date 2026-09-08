@@ -12,7 +12,7 @@ image:
 # bumped in the PR that restarted zot after the outage described in
 # k8s-zot#5's revert -- the Secret's content was already correct, but
 # nothing had told the Deployment to restart and read it.
-restartTrigger: "2026-09-06-htpasswd-outage-fix"
+restartTrigger: "2026-09-08-htpasswd-merge-mechanism-rebuilt"
 
 verify:
   image:
@@ -26,9 +26,51 @@ bootstrap:
 
 # Consumers of the provider/consumer service-credential pattern (see
 # admin-openbao's locals.tf): each entry gets its own generated password
-# at kv/homelab/service/k8s-zot/<name>/<cred>, and its own read-only,
-# repository-scoped Zot user.
+# at kv/homelab/service/k8s-zot/<name>/<cred>, and its own Zot user
+# scoped to exactly the repository path(s) it needs. `actions` defaults
+# to read-only; publish-side consumers (their own CI pushing an image or
+# chart) set it to read+create+update.
+#
+# Real usage confirmed directly against each consumer's own manifests/
+# workflows (not assumed from naming) as of 2026-09-08:
+# - k8s-graphql-router, k8s-hdmi-switch: in-cluster image pull only.
+# - k8s-argocd (repo-creds-oci): ArgoCD's OCI Helm chart credential,
+#   scoped to the one chart actually published there today.
+# - k8s-argocd-image-updater: watches the 3 image repos below for new
+#   tags/digests.
+# - k8s-lib-ci-rbac, graph-router, graph-hdmi-switch, ui-hdmi-switch:
+#   each publishes its own chart/image via its own CI. graph-hdmi-switch
+#   and ui-hdmi-switch each also push a short-lived `-test` tagged image
+#   as part of their own CI (a separate repository path in Zot).
 serviceConsumers:
   - name: k8s-garage
     cred: pull-helm-libs
-    repository: charts/k8s-ci-rbac
+    repositories: [charts/k8s-ci-rbac]
+  - name: k8s-graphql-router
+    cred: zot-pull
+    repositories: [graph-router]
+  - name: k8s-hdmi-switch
+    cred: zot-pull
+    repositories: [graph-hdmi-switch, ui-hdmi-switch]
+  - name: k8s-argocd
+    cred: zot-pull
+    repositories: [charts/k8s-ci-rbac]
+  - name: k8s-argocd-image-updater
+    cred: zot-pull
+    repositories: [graph-router, graph-hdmi-switch, ui-hdmi-switch]
+  - name: k8s-lib-ci-rbac
+    cred: zot-publish
+    repositories: [charts/k8s-ci-rbac]
+    actions: [read, create, update]
+  - name: graph-router
+    cred: zot-publish
+    repositories: [graph-router]
+    actions: [read, create, update]
+  - name: graph-hdmi-switch
+    cred: zot-publish
+    repositories: [graph-hdmi-switch, graph-hdmi-switch-test]
+    actions: [read, create, update]
+  - name: ui-hdmi-switch
+    cred: zot-publish
+    repositories: [ui-hdmi-switch, ui-hdmi-switch-test]
+    actions: [read, create, update]

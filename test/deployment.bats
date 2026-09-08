@@ -10,5 +10,5 @@ setup() {
   annotation=$(echo "$RENDERED" | yq eval-all '
     select(.kind == "Deployment" and .metadata.name == "zot") | .spec.template.metadata.annotations["restart-trigger"]
   ' -)
-  [ "$annotation" = "2026-09-06-htpasswd-outage-fix" ]
+  [ "$annotation" = "2026-09-08-htpasswd-merge-mechanism-rebuilt" ]
 }
