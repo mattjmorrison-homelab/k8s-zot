@@ -44,7 +44,11 @@ bootstrap:
 # chart) set it to read+create+update.
 #
 # Real usage confirmed directly against each consumer's own manifests/
-# workflows (not assumed from naming) as of 2026-09-08:
+# workflows (not assumed from naming) as of 2026-09-08. k8s-garage was
+# removed 2026-09-24 -- its pull-helm-libs entry was scaffolded
+# speculatively for an OCI chart dependency (k8s-lib-ci-rbac) k8s-garage's
+# own chart never actually declared; confirmed unused anywhere in the org
+# (see admin-openbao's retirement of service/k8s-zot/k8s-garage/pull-helm-libs).
 # - k8s-graphql-router, k8s-hdmi-switch: in-cluster image pull only.
 # - k8s-argocd (repo-creds-oci): ArgoCD's OCI Helm chart credential,
 #   scoped to the one chart actually published there today.
@@ -55,9 +59,6 @@ bootstrap:
 #   and ui-hdmi-switch each also push a short-lived `-test` tagged image
 #   as part of their own CI (a separate repository path in Zot).
 serviceConsumers:
-  - name: k8s-garage
-    cred: pull-helm-libs
-    repositories: [charts/k8s-ci-rbac]
   - name: k8s-graphql-router
     cred: zot-pull
     repositories: [graph-router]
