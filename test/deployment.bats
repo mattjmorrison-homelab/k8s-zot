@@ -10,7 +10,7 @@ setup() {
   annotation=$(echo "$RENDERED" | yq eval-all '
     select(.kind == "Deployment" and .metadata.name == "zot") | .spec.template.metadata.annotations["restart-trigger"]
   ' -)
-  [ "$annotation" = "2026-09-08-htpasswd-merge-mechanism-rebuilt" ]
+  [ "$annotation" = "2026-09-24-retire-ci-ci-readonly" ]
 }
 
 @test "zot's pod runs an init container that waits for the htpasswd ExternalSecret to refresh before the main container starts" {

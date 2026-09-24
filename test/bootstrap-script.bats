@@ -77,7 +77,7 @@ SCRIPT
   grep -q 'fake-generated-password' "$MOCK_POST_LOG"
 }
 
-@test "merge_htpasswd preserves the legacy blob untouched and appends one hashed line per consumer with a stored password" {
+@test "merge_htpasswd generates fresh from consumers only, no legacy ci/ci-readonly blob carried forward" {
   export MOCK_HTPASSWD_RESPONSE='{"data":{"data":{"value":"ci:legacyhash1\nci-readonly:legacyhash2"}}}'
   export MOCK_GET_RESPONSE='{"data":{"data":{"value":"secret-pw"}}}'
   export SERVICE_CONSUMERS_JSON='[{"name":"k8s-garage","cred":"pull-helm-libs"}]'
@@ -85,16 +85,15 @@ SCRIPT
   run merge_htpasswd "$out"
   [ "$status" -eq 0 ]
   [[ "$output" == *"Wrote merged htpasswd"* ]]
-  grep -q '^ci:legacyhash1$' "$out"
-  grep -q '^ci-readonly:legacyhash2$' "$out"
+  ! grep -q 'ci:legacyhash1' "$out"
+  ! grep -q 'ci-readonly:legacyhash2' "$out"
   grep -q '^k8s-garage:hashed-secret-pw$' "$out"
   posted=$(cat "$MOCK_POST_LOG")
-  [[ "$posted" == *"legacyhash1"* ]]
+  [[ "$posted" != *"legacyhash1"* ]]
   [[ "$posted" == *"k8s-garage:hashed-secret-pw"* ]]
 }
 
 @test "merge_htpasswd skips a consumer with no password yet, without failing the whole write" {
-  export MOCK_HTPASSWD_RESPONSE='{"data":{"data":{"value":"ci:legacyhash1"}}}'
   export MOCK_GET_RESPONSE='{}'
   export SERVICE_CONSUMERS_JSON='[{"name":"k8s-graphql-router","cred":"zot-pull"}]'
   out="$BATS_TEST_TMPDIR/merged.htpasswd"
@@ -102,7 +101,6 @@ SCRIPT
   [ "$status" -eq 0 ]
   [[ "$output" == *"No password yet for k8s-graphql-router"* ]]
   [[ "$output" == *"Wrote merged htpasswd"* ]]
-  grep -q '^ci:legacyhash1$' "$out"
   ! grep -q 'k8s-graphql-router' "$out"
   [ -s "$MOCK_POST_LOG" ]
 }

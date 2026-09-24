@@ -13,33 +13,24 @@ data:
         "auth": { "htpasswd": { "path": "/secret/htpasswd" } },
         "accessControl": {
           "repositories": {
-            "**": {
-              "policies": [
-                {
-                  "users": ["ci-readonly"],
-                  "actions": ["read"]
-                }
-              ],
-              "defaultPolicy": []
-            }
             {{- $allRepos := list }}
             {{- range .Values.serviceConsumers }}
             {{- range .repositories }}
             {{- $allRepos = append $allRepos . }}
             {{- end }}
             {{- end }}
-            {{- range ($allRepos | uniq) }}
-            {{- $repo := . }}
+            {{- range $i, $repo := ($allRepos | uniq) }}
+            {{- if $i }},{{ end }}
             {{- $consumers := list }}
             {{- range $.Values.serviceConsumers }}
             {{- if has $repo .repositories }}
             {{- $consumers = append $consumers . }}
             {{- end }}
-            {{- end }},
+            {{- end }}
             "{{ $repo }}": {
               "policies": [
-                {{- range $i, $consumer := $consumers }}
-                {{- if $i }},{{ end }}
+                {{- range $j, $consumer := $consumers }}
+                {{- if $j }},{{ end }}
                 {
                   "users": ["{{ $consumer.name }}"],
                   "actions": {{ $consumer.actions | default (list "read") | toJson }}
@@ -49,10 +40,6 @@ data:
               "defaultPolicy": []
             }
             {{- end }}
-          },
-          "adminPolicy": {
-            "users": ["ci"],
-            "actions": ["read", "create", "update", "delete"]
           }
         }
       },

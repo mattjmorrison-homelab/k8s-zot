@@ -12,7 +12,7 @@ image:
 # bumped in the PR that restarted zot after the outage described in
 # k8s-zot#5's revert -- the Secret's content was already correct, but
 # nothing had told the Deployment to restart and read it.
-restartTrigger: "2026-09-08-htpasswd-merge-mechanism-rebuilt"
+restartTrigger: "2026-09-24-retire-ci-ci-readonly"
 
 verify:
   image:
