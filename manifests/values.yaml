@@ -14,18 +14,6 @@ image:
 # nothing had told the Deployment to restart and read it.
 restartTrigger: "2026-09-08-htpasswd-merge-mechanism-rebuilt"
 
-# Bump this to any new string to force an immediate ExternalSecrets
-# Operator reconcile on all 9 service-credential ExternalSecrets below,
-# instead of waiting for their 1h refreshInterval -- any metadata/spec
-# change on an ExternalSecret changes the hash ESO compares against
-# status.syncedResourceVersion, forcing an immediate refresh (verified
-# against the real ESO v2.10.0 controller source). Git-mediated, no
-# manual kubectl command. Real-world use: bumped here after
-# admin-openbao#40 briefly broke all 9 of these (narrowed zot's
-# OpenBao role too far, reverted in admin-openbao#43) -- this is what
-# actually got them healthy again post-revert, without waiting an hour.
-refreshTrigger: "2026-09-24-post-incident-recovery"
-
 verify:
   image:
     repository: alpine
@@ -49,6 +37,14 @@ bootstrap:
 # speculatively for an OCI chart dependency (k8s-lib-ci-rbac) k8s-garage's
 # own chart never actually declared; confirmed unused anywhere in the org
 # (see admin-openbao's retirement of service/k8s-zot/k8s-garage/pull-helm-libs).
+#
+# This list feeds two consumers: the bootstrap job (writes each entry's
+# password into the merged htpasswd, and zot's own accessControl config
+# below) -- both real and load-bearing. It used to also drive a
+# zot-service-cred-<name> ExternalSecret per entry in this namespace,
+# but that was confirmed unread by anything (every real consumer fetches
+# its own credential directly via its own dedicated OpenBao role/path
+# instead) and removed 2026-09-24.
 # - k8s-graphql-router, k8s-hdmi-switch: in-cluster image pull only.
 # - k8s-argocd (repo-creds-oci): ArgoCD's OCI Helm chart credential,
 #   scoped to the one chart actually published there today.
