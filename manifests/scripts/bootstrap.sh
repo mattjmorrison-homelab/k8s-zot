@@ -26,15 +26,17 @@ ensure_password() {
 # returned empty when ArgoCD's repo-server lacked RBAC, wiping out
 # every user including the admin `ci` -- see k8s-zot#5's revert), this
 # reads and writes only through OpenBao's own API, using this script's
-# own already-granted zot-bootstrap identity. The legacy ci/ci-readonly
-# blob is fetched and re-written completely untouched, unconditionally
-# -- a single consumer's password fetch failing skips only that one
-# line, never the whole write.
+# own already-granted zot-bootstrap identity. Generated fresh from
+# SERVICE_CONSUMERS_JSON every run, not merged onto whatever's already
+# stored -- the legacy ci/ci-readonly blob this used to carry forward
+# untouched is retired (2026-09-24: confirmed zero live consumers of
+# either anymore), so this is now the complete, real source of truth
+# for who's actually allowed into the registry, not an unbounded
+# accumulation of old entries. A single consumer's password fetch
+# failing skips only that one line, never the whole write.
 merge_htpasswd() {
   out="$1"
-  existing=$(curl -sf -H "X-Vault-Token: $VAULT_TOKEN_SELF" \
-    "$OPENBAO_ADDR/v1/kv/data/homelab/k8s-zot/htpasswd" || echo '{}')
-  echo "$existing" | jq -r '.data.data.value // empty' > "$out"
+  : > "$out"
 
   echo "$SERVICE_CONSUMERS_JSON" | jq -c '.[]' |
     while IFS= read -r consumer; do
