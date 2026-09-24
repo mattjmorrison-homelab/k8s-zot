@@ -15,8 +15,8 @@ setup() {
   json=$(echo "$RENDERED" | yq eval-all 'select(.kind == "Job" and .metadata.name == "zot-bootstrap-secrets") | .spec.template.spec.containers[0].env[] | select(.name == "SERVICE_CONSUMERS_JSON") | .value' -)
   name=$(echo "$json" | jq -r '.[0].name')
   cred=$(echo "$json" | jq -r '.[0].cred')
-  [ "$name" = "k8s-garage" ]
-  [ "$cred" = "pull-helm-libs" ]
+  [ "$name" = "k8s-graphql-router" ]
+  [ "$cred" = "zot-pull" ]
 }
 
 @test "bootstrap ConfigMap loads the real bootstrap.sh file, not an inline copy" {

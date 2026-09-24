@@ -8,7 +8,7 @@ setup() {
 
 @test "each service-credential ExternalSecret carries refreshTrigger as its refresh-trigger annotation" {
   count=$(echo "$RENDERED" | yq eval-all '
-    select(.kind == "ExternalSecret" and .metadata.name == "zot-service-cred-k8s-garage") | .metadata.annotations["refresh-trigger"]
+    select(.kind == "ExternalSecret" and .metadata.name == "zot-service-cred-k8s-graphql-router") | .metadata.annotations["refresh-trigger"]
   ' -)
   [ "$count" = "2026-09-24-post-incident-recovery" ]
 }
@@ -18,5 +18,12 @@ setup() {
     select(.kind == "ExternalSecret" and (.metadata.name | test("^zot-service-cred-"))) | .metadata.annotations["refresh-trigger"]
   ' -)
   count=$(echo "$matches" | grep -c "2026-09-24-post-incident-recovery")
-  [ "$count" = "10" ]
+  [ "$count" = "9" ]
+}
+
+@test "k8s-garage no longer has a service-credential ExternalSecret" {
+  found=$(echo "$RENDERED" | yq eval-all '
+    select(.kind == "ExternalSecret" and .metadata.name == "zot-service-cred-k8s-garage") | .metadata.name
+  ' -)
+  [ -z "$found" ]
 }
