@@ -50,10 +50,11 @@ bootstrap:
 #   scoped to the one chart actually published there today.
 # - k8s-argocd-image-updater: watches the 3 image repos below for new
 #   tags/digests.
-# - k8s-lib-ci-rbac, graph-router, graph-hdmi-switch, ui-hdmi-switch:
-#   each publishes its own chart/image via its own CI. graph-hdmi-switch
-#   and ui-hdmi-switch each also push a short-lived `-test` tagged image
-#   as part of their own CI (a separate repository path in Zot).
+# - k8s-lib-ci-rbac, graph-router, graph-hdmi-switch, ui-hdmi-switch,
+#   app-backstage: each publishes its own chart/image via its own CI.
+#   graph-hdmi-switch, ui-hdmi-switch, and app-backstage each also push a
+#   short-lived `-test` tagged image as part of their own CI (a separate
+#   repository path in Zot).
 serviceConsumers:
   - name: k8s-graphql-router
     cred: zot-pull
@@ -82,6 +83,10 @@ serviceConsumers:
   - name: ui-hdmi-switch
     cred: zot-publish
     repositories: [ui-hdmi-switch, ui-hdmi-switch-test]
+    actions: [read, create, update]
+  - name: app-backstage
+    cred: zot-publish
+    repositories: [app-backstage, app-backstage-test]
     actions: [read, create, update]
   # Not a real registry consumer -- exists solely so the PostSync verify
   # job can make a real authenticated request, proving the htpasswd
