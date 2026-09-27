@@ -31,6 +31,11 @@ setup() {
   [ "$backstage_test_actions" = '["read","create","update"]' ]
 }
 
+@test "k8s-backstage gets a read-only pull policy on app-backstage's image repository" {
+  actions=$(echo "$CONFIG_JSON" | jq -c '.http.accessControl.repositories["app-backstage"].policies | map(select(.users == ["k8s-backstage"]))[0].actions')
+  [ "$actions" = '["read"]' ]
+}
+
 @test "a repository shared by multiple consumers groups all their policies under one key, not duplicate keys" {
   # graph-router is read by k8s-graphql-router and k8s-argocd-image-updater,
   # and published (read+create+update) by graph-router's own CI -- three
