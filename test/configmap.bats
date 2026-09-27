@@ -24,11 +24,14 @@ setup() {
   [ "$graph_hdmi_test_users" = "1" ]
 }
 
-@test "app-backstage gets its own publish-side accessControl block for both its image and test-image repositories" {
+@test "app-backstage gets its own publish-side accessControl block for its image repository" {
   backstage_actions=$(echo "$CONFIG_JSON" | jq -c '.http.accessControl.repositories["app-backstage"].policies | map(select(.users == ["app-backstage"]))[0].actions')
-  backstage_test_actions=$(echo "$CONFIG_JSON" | jq -c '.http.accessControl.repositories["app-backstage-test"].policies | map(select(.users == ["app-backstage"]))[0].actions')
   [ "$backstage_actions" = '["read","create","update"]' ]
-  [ "$backstage_test_actions" = '["read","create","update"]' ]
+}
+
+@test "app-backstage-test repository no longer has any accessControl block -- the test stage was dropped, nothing pushes there anymore" {
+  repo=$(echo "$CONFIG_JSON" | jq -c '.http.accessControl.repositories | has("app-backstage-test")')
+  [ "$repo" = "false" ]
 }
 
 @test "k8s-backstage gets a read-only pull policy on app-backstage's image repository" {
