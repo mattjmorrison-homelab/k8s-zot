@@ -29,6 +29,11 @@ setup() {
   [ "$backstage_actions" = '["read","create","update"]' ]
 }
 
+@test "docker-backstage gets its own publish-side accessControl block for its image repository" {
+  backstage_actions=$(echo "$CONFIG_JSON" | jq -c '.http.accessControl.repositories["docker-backstage"].policies | map(select(.users == ["docker-backstage"]))[0].actions')
+  [ "$backstage_actions" = '["read","create","update"]' ]
+}
+
 @test "app-backstage-test repository no longer has any accessControl block -- the test stage was dropped, nothing pushes there anymore" {
   repo=$(echo "$CONFIG_JSON" | jq -c '.http.accessControl.repositories | has("app-backstage-test")')
   [ "$repo" = "false" ]
