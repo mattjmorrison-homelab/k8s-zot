@@ -68,7 +68,7 @@ serviceConsumers:
     repositories: [charts/k8s-ci-rbac]
   - name: k8s-argocd-image-updater
     cred: zot-pull
-    repositories: [graph-router, graph-hdmi-switch, ui-hdmi-switch]
+    repositories: [graph-router, graph-hdmi-switch, ui-hdmi-switch, app-backstage]
   - name: k8s-backstage
     cred: zot-pull
     repositories: [app-backstage]
