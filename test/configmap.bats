@@ -24,6 +24,13 @@ setup() {
   [ "$graph_hdmi_test_users" = "1" ]
 }
 
+@test "app-backstage gets its own publish-side accessControl block for both its image and test-image repositories" {
+  backstage_actions=$(echo "$CONFIG_JSON" | jq -c '.http.accessControl.repositories["app-backstage"].policies | map(select(.users == ["app-backstage"]))[0].actions')
+  backstage_test_actions=$(echo "$CONFIG_JSON" | jq -c '.http.accessControl.repositories["app-backstage-test"].policies | map(select(.users == ["app-backstage"]))[0].actions')
+  [ "$backstage_actions" = '["read","create","update"]' ]
+  [ "$backstage_test_actions" = '["read","create","update"]' ]
+}
+
 @test "a repository shared by multiple consumers groups all their policies under one key, not duplicate keys" {
   # graph-router is read by k8s-graphql-router and k8s-argocd-image-updater,
   # and published (read+create+update) by graph-router's own CI -- three
