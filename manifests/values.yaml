@@ -45,7 +45,8 @@ bootstrap:
 # but that was confirmed unread by anything (every real consumer fetches
 # its own credential directly via its own dedicated OpenBao role/path
 # instead) and removed 2026-09-24.
-# - k8s-graphql-router, k8s-hdmi-switch: in-cluster image pull only.
+# - k8s-graphql-router, k8s-hdmi-switch, k8s-backstage: in-cluster image
+#   pull only.
 # - k8s-argocd (repo-creds-oci): ArgoCD's OCI Helm chart credential,
 #   scoped to the one chart actually published there today.
 # - k8s-argocd-image-updater: watches the 3 image repos below for new
@@ -68,6 +69,9 @@ serviceConsumers:
   - name: k8s-argocd-image-updater
     cred: zot-pull
     repositories: [graph-router, graph-hdmi-switch, ui-hdmi-switch]
+  - name: k8s-backstage
+    cred: zot-pull
+    repositories: [app-backstage]
   - name: k8s-lib-ci-rbac
     cred: zot-publish
     repositories: [charts/k8s-ci-rbac]
