@@ -90,7 +90,7 @@ serviceConsumers:
     actions: [read, create, update]
   - name: app-backstage
     cred: zot-publish
-    repositories: [app-backstage, app-backstage-test]
+    repositories: [app-backstage]
     actions: [read, create, update]
   # Not a real registry consumer -- exists solely so the PostSync verify
   # job can make a real authenticated request, proving the htpasswd
