@@ -92,7 +92,7 @@ serviceConsumers:
     actions: [read, create, update]
   - name: app-backstage
     cred: zot-publish
-    repositories: [app-backstage]
+    repositories: [app-backstage, docker-backstage]
     actions: [read, create, update]
   - name: docker-backstage
     cred: zot-publish
