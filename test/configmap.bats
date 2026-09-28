@@ -9,6 +9,14 @@ setup() {
   export CONFIG_JSON
 }
 
+@test "http read/write timeouts default to 300s, well above zot's 60s default" {
+  read_timeout=$(echo "$CONFIG_JSON" | jq -r '.http.readTimeout')
+  write_timeout=$(echo "$CONFIG_JSON" | jq -r '.http.writeTimeout')
+
+  [ "$read_timeout" = "300s" ]
+  [ "$write_timeout" = "300s" ]
+}
+
 @test "no whole-registry ci-readonly wildcard and no ci adminPolicy -- both retired, zero live consumers left" {
   wildcard=$(echo "$CONFIG_JSON" | jq -c '.http.accessControl.repositories | has("**")')
   has_admin_policy=$(echo "$CONFIG_JSON" | jq -c '.http.accessControl | has("adminPolicy")')
