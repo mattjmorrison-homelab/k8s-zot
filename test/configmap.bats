@@ -34,6 +34,11 @@ setup() {
   [ "$backstage_actions" = '["read","create","update"]' ]
 }
 
+@test "app-backstage also gets a policy on docker-backstage's repository, so its CI can pull the base image" {
+  actions=$(echo "$CONFIG_JSON" | jq -c '.http.accessControl.repositories["docker-backstage"].policies | map(select(.users == ["app-backstage"]))[0].actions')
+  [ "$actions" = '["read","create","update"]' ]
+}
+
 @test "app-backstage-test repository no longer has any accessControl block -- the test stage was dropped, nothing pushes there anymore" {
   repo=$(echo "$CONFIG_JSON" | jq -c '.http.accessControl.repositories | has("app-backstage-test")')
   [ "$repo" = "false" ]
