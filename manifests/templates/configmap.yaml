@@ -10,6 +10,8 @@ data:
       "http": {
         "address": "0.0.0.0",
         "port": "5000",
+        "readTimeout": "{{ .Values.http.readTimeout | default "300s" }}",
+        "writeTimeout": "{{ .Values.http.writeTimeout | default "300s" }}",
         "auth": { "htpasswd": { "path": "/secret/htpasswd" } },
         "accessControl": {
           "repositories": {
