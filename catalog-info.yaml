@@ -1,0 +1,10 @@
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: k8s-zot
+  annotations:
+    github.com/project-slug: mattjmorrison-homelab/k8s-zot
+spec:
+  type: container-registry
+  owner: mattjmorrison-homelab
+  system: platform
