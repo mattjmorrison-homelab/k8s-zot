@@ -72,6 +72,13 @@ setup() {
   [ "$actions" = '["read","create","update"]' ]
 }
 
+@test "graph-ad-reporter and ui-ad-reporter also get publish-side accessControl blocks for their -test repositories, mirroring graph-hdmi-switch-test" {
+  graph_test_actions=$(echo "$CONFIG_JSON" | jq -c '.http.accessControl.repositories["graph-ad-reporter-test"].policies | map(select(.users == ["graph-ad-reporter"]))[0].actions')
+  ui_test_actions=$(echo "$CONFIG_JSON" | jq -c '.http.accessControl.repositories["ui-ad-reporter-test"].policies | map(select(.users == ["ui-ad-reporter"]))[0].actions')
+  [ "$graph_test_actions" = '["read","create","update"]' ]
+  [ "$ui_test_actions" = '["read","create","update"]' ]
+}
+
 @test "k8s-ad-reporter gets a read-only pull policy on both graph-ad-reporter's and ui-ad-reporter's image repositories" {
   graph_actions=$(echo "$CONFIG_JSON" | jq -c '.http.accessControl.repositories["graph-ad-reporter"].policies | map(select(.users == ["k8s-ad-reporter"]))[0].actions')
   ui_actions=$(echo "$CONFIG_JSON" | jq -c '.http.accessControl.repositories["ui-ad-reporter"].policies | map(select(.users == ["k8s-ad-reporter"]))[0].actions')

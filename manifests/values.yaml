@@ -60,10 +60,13 @@ bootstrap:
 # - k8s-lib-ci-rbac, graph-router, graph-hdmi-switch, ui-hdmi-switch,
 #   app-backstage, docker-backstage, graph-ad-reporter, ui-ad-reporter:
 #   each publishes its own chart/image via its own CI. graph-hdmi-switch,
-#   ui-hdmi-switch, and app-backstage each also push a short-lived `-test`
-#   tagged image as part of their own CI (a separate repository path in
-#   Zot). docker-backstage publishes the shared base image (Backstage's
-#   Node dependencies pre-installed, native modules compiled) that
+#   ui-hdmi-switch, graph-ad-reporter, and ui-ad-reporter each also push a
+#   short-lived `-test` tagged image as part of their own CI (a separate
+#   repository path in Zot) -- missing `-test` entries for the latter two
+#   caused their CI publish steps to 401 outright, since Zot's
+#   accessControl has no policy at all for an unlisted repository path.
+#   docker-backstage publishes the shared base image (Backstage's Node
+#   dependencies pre-installed, native modules compiled) that
 #   app-backstage builds on top of. graph-ad-reporter/ui-ad-reporter are
 #   step 5 of the ad-reporter rollout (see
 #   .github/docs/ad-reporter-plan.md in admin-github) -- their own CI
@@ -111,11 +114,11 @@ serviceConsumers:
     actions: [read, create, update]
   - name: graph-ad-reporter
     cred: zot-publish
-    repositories: [graph-ad-reporter]
+    repositories: [graph-ad-reporter, graph-ad-reporter-test]
     actions: [read, create, update]
   - name: ui-ad-reporter
     cred: zot-publish
-    repositories: [ui-ad-reporter]
+    repositories: [ui-ad-reporter, ui-ad-reporter-test]
     actions: [read, create, update]
   - name: k8s-ad-reporter
     cred: zot-pull
