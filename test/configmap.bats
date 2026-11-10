@@ -62,6 +62,13 @@ setup() {
   [ "$actions" = '["read"]' ]
 }
 
+@test "k8s-argocd-image-updater also gets read on graph-ad-reporter's and ui-ad-reporter's image repositories" {
+  graph_actions=$(echo "$CONFIG_JSON" | jq -c '.http.accessControl.repositories["graph-ad-reporter"].policies | map(select(.users == ["k8s-argocd-image-updater"]))[0].actions')
+  ui_actions=$(echo "$CONFIG_JSON" | jq -c '.http.accessControl.repositories["ui-ad-reporter"].policies | map(select(.users == ["k8s-argocd-image-updater"]))[0].actions')
+  [ "$graph_actions" = '["read"]' ]
+  [ "$ui_actions" = '["read"]' ]
+}
+
 @test "graph-ad-reporter gets its own publish-side accessControl block for its image repository" {
   actions=$(echo "$CONFIG_JSON" | jq -c '.http.accessControl.repositories["graph-ad-reporter"].policies | map(select(.users == ["graph-ad-reporter"]))[0].actions')
   [ "$actions" = '["read","create","update"]' ]
