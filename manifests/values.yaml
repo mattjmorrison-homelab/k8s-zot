@@ -12,7 +12,7 @@ image:
 # bumped in the PR that restarted zot after the outage described in
 # k8s-zot#5's revert -- the Secret's content was already correct, but
 # nothing had told the Deployment to restart and read it.
-restartTrigger: "2026-09-24-retire-ci-ci-readonly"
+restartTrigger: "2026-11-10-reload-htpasswd-for-ad-reporter"
 
 # Zot's 60s default was too short for a large (~681MB) blob under host
 # contention -- caused real "write tcp ...: i/o timeout" failures.
