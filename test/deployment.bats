@@ -10,7 +10,14 @@ setup() {
   annotation=$(echo "$RENDERED" | yq eval-all '
     select(.kind == "Deployment" and .metadata.name == "zot") | .spec.template.metadata.annotations["restart-trigger"]
   ' -)
-  [ "$annotation" = "2026-11-10-reload-htpasswd-for-ad-reporter" ]
+  [ "$annotation" = "2026-09-24-retire-ci-ci-readonly" ]
+}
+
+@test "renders a non-empty checksum/service-consumers annotation that changes the pod template whenever serviceConsumers changes" {
+  checksum=$(echo "$RENDERED" | yq eval-all '
+    select(.kind == "Deployment" and .metadata.name == "zot") | .spec.template.metadata.annotations["checksum/service-consumers"]
+  ' -)
+  [ -n "$checksum" ]
 }
 
 @test "zot's pod runs an init container that waits for the htpasswd ExternalSecret to refresh before the main container starts" {
