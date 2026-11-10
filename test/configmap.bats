@@ -62,6 +62,23 @@ setup() {
   [ "$actions" = '["read"]' ]
 }
 
+@test "graph-ad-reporter gets its own publish-side accessControl block for its image repository" {
+  actions=$(echo "$CONFIG_JSON" | jq -c '.http.accessControl.repositories["graph-ad-reporter"].policies | map(select(.users == ["graph-ad-reporter"]))[0].actions')
+  [ "$actions" = '["read","create","update"]' ]
+}
+
+@test "ui-ad-reporter gets its own publish-side accessControl block for its image repository" {
+  actions=$(echo "$CONFIG_JSON" | jq -c '.http.accessControl.repositories["ui-ad-reporter"].policies | map(select(.users == ["ui-ad-reporter"]))[0].actions')
+  [ "$actions" = '["read","create","update"]' ]
+}
+
+@test "k8s-ad-reporter gets a read-only pull policy on both graph-ad-reporter's and ui-ad-reporter's image repositories" {
+  graph_actions=$(echo "$CONFIG_JSON" | jq -c '.http.accessControl.repositories["graph-ad-reporter"].policies | map(select(.users == ["k8s-ad-reporter"]))[0].actions')
+  ui_actions=$(echo "$CONFIG_JSON" | jq -c '.http.accessControl.repositories["ui-ad-reporter"].policies | map(select(.users == ["k8s-ad-reporter"]))[0].actions')
+  [ "$graph_actions" = '["read"]' ]
+  [ "$ui_actions" = '["read"]' ]
+}
+
 @test "a repository shared by multiple consumers groups all their policies under one key, not duplicate keys" {
   # graph-router is read by k8s-graphql-router and k8s-argocd-image-updater,
   # and published (read+create+update) by graph-router's own CI -- three
