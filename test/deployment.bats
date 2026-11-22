@@ -10,7 +10,7 @@ setup() {
   annotation=$(echo "$RENDERED" | yq eval-all '
     select(.kind == "Deployment" and .metadata.name == "zot") | .spec.template.metadata.annotations["restart-trigger"]
   ' -)
-  [ "$annotation" = "2026-09-24-retire-ci-ci-readonly" ]
+  [ "$annotation" = "2026-11-22-add-k8s-claude-pull-consumer" ]
 }
 
 @test "renders a non-empty checksum/service-consumers annotation that changes the pod template whenever serviceConsumers changes" {
