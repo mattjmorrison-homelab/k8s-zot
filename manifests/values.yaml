@@ -12,7 +12,7 @@ image:
 # bumped in the PR that restarted zot after the outage described in
 # k8s-zot#5's revert -- the Secret's content was already correct, but
 # nothing had told the Deployment to restart and read it.
-restartTrigger: "2026-09-24-retire-ci-ci-readonly"
+restartTrigger: "2026-11-22-add-k8s-claude-pull-consumer"
 
 # Zot's 60s default was too short for a large (~681MB) blob under host
 # contention -- caused real "write tcp ...: i/o timeout" failures.
@@ -124,6 +124,9 @@ serviceConsumers:
   - name: k8s-ad-reporter
     cred: zot-pull
     repositories: [graph-ad-reporter, ui-ad-reporter]
+  - name: k8s-claude
+    cred: zot-pull
+    repositories: [graph-claude]
   - name: graph-claude
     cred: zot-publish
     repositories: [graph-claude, graph-claude-test]
