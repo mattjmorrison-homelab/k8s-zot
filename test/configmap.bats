@@ -93,6 +93,23 @@ setup() {
   [ "$ui_actions" = '["read"]' ]
 }
 
+@test "claude-prompt-runner gets its own publish-side accessControl block for its image repository" {
+  actions=$(echo "$CONFIG_JSON" | jq -c '.http.accessControl.repositories["claude-prompt-runner"].policies | map(select(.users == ["claude-prompt-runner"]))[0].actions')
+  [ "$actions" = '["read","create","update"]' ]
+}
+
+@test "claude-prompt-runner also gets a publish-side accessControl block for its -test repository, mirroring graph-claude-test" {
+  actions=$(echo "$CONFIG_JSON" | jq -c '.http.accessControl.repositories["claude-prompt-runner-test"].policies | map(select(.users == ["claude-prompt-runner"]))[0].actions')
+  [ "$actions" = '["read","create","update"]' ]
+}
+
+@test "k8s-claude gets a read-only pull policy on both graph-claude's and claude-prompt-runner's image repositories" {
+  graph_actions=$(echo "$CONFIG_JSON" | jq -c '.http.accessControl.repositories["graph-claude"].policies | map(select(.users == ["k8s-claude"]))[0].actions')
+  runner_actions=$(echo "$CONFIG_JSON" | jq -c '.http.accessControl.repositories["claude-prompt-runner"].policies | map(select(.users == ["k8s-claude"]))[0].actions')
+  [ "$graph_actions" = '["read"]' ]
+  [ "$runner_actions" = '["read"]' ]
+}
+
 @test "a repository shared by multiple consumers groups all their policies under one key, not duplicate keys" {
   # graph-router is read by k8s-graphql-router and k8s-argocd-image-updater,
   # and published (read+create+update) by graph-router's own CI -- three
