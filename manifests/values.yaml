@@ -73,6 +73,10 @@ bootstrap:
 #   .github/docs/ad-reporter-plan.md in admin-github) -- their own CI
 #   publish steps can't go green until this lands; k8s-ad-reporter (the
 #   pull consumer below) doesn't exist as a repo yet.
+# - claude-prompt-runner: a Node subproject of k8s-claude, published by its
+#   own CI; k8s-claude's existing pull consumer below now also lists this
+#   repository so its in-cluster CronJob can pull the image, reusing its
+#   existing zot-pull credential rather than a new one.
 serviceConsumers:
   - name: k8s-graphql-router
     cred: zot-pull
@@ -126,10 +130,14 @@ serviceConsumers:
     repositories: [graph-ad-reporter, ui-ad-reporter]
   - name: k8s-claude
     cred: zot-pull
-    repositories: [graph-claude]
+    repositories: [graph-claude, claude-prompt-runner]
   - name: graph-claude
     cred: zot-publish
     repositories: [graph-claude, graph-claude-test]
+    actions: [read, create, update]
+  - name: claude-prompt-runner
+    cred: zot-publish
+    repositories: [claude-prompt-runner, claude-prompt-runner-test]
     actions: [read, create, update]
   # Not a real registry consumer -- exists solely so the PostSync verify
   # job can make a real authenticated request, proving the htpasswd
