@@ -6,7 +6,37 @@ metadata:
 data:
   config.json: |
     {
-      "storage": { "rootDirectory": "/var/lib/registry" },
+      "storage": {
+        "rootDirectory": "/var/lib/registry",
+        "gc": true,
+        "gcInterval": "1h",
+        "retention": {
+          {{/*
+            zot evaluates keepTags entries in list order and stops at the
+            first pattern match (confirmed in zot v2.1.20's
+            pkg/retention/retention.go getTagPolicy) -- it is not an
+            independent OR across entries. The pr-* entry must stay first:
+            if the catch-all ".*" entry came first, every pr-* tag would
+            match it too and never age out.
+          */}}
+          "dryRun": true,
+          "policies": [
+            {
+              "repositories": ["**"],
+              "deleteUntagged": false,
+              "keepTags": [
+                {
+                  "patterns": ["^pr-.+$"],
+                  "pushedWithin": "120h"
+                },
+                {
+                  "patterns": [".*"]
+                }
+              ]
+            }
+          ]
+        }
+      },
       "http": {
         "address": "0.0.0.0",
         "port": "5000",
