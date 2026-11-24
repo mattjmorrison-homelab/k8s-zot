@@ -110,6 +110,11 @@ setup() {
   [ "$runner_actions" = '["read"]' ]
 }
 
+@test "k8s-argocd-image-updater also gets read on graph-claude's image repository" {
+  actions=$(echo "$CONFIG_JSON" | jq -c '.http.accessControl.repositories["graph-claude"].policies | map(select(.users == ["k8s-argocd-image-updater"]))[0].actions')
+  [ "$actions" = '["read"]' ]
+}
+
 @test "a repository shared by multiple consumers groups all their policies under one key, not duplicate keys" {
   # graph-router is read by k8s-graphql-router and k8s-argocd-image-updater,
   # and published (read+create+update) by graph-router's own CI -- three
