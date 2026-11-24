@@ -119,3 +119,42 @@ setup() {
   [ "$policy_count" = "3" ]
   [ "$publisher_actions" = '["read","create","update"]' ]
 }
+
+@test "gc is enabled with a 1h interval so retention policies actually run" {
+  gc=$(echo "$CONFIG_JSON" | jq '.storage.gc')
+  gc_interval=$(echo "$CONFIG_JSON" | jq -r '.storage.gcInterval')
+  [ "$gc" = "true" ]
+  [ "$gc_interval" = "1h" ]
+}
+
+@test "retention starts in dryRun and applies to every repository" {
+  dry_run=$(echo "$CONFIG_JSON" | jq '.storage.retention.dryRun')
+  repositories=$(echo "$CONFIG_JSON" | jq -c '.storage.retention.policies[0].repositories')
+  [ "$dry_run" = "true" ]
+  [ "$repositories" = '["**"]' ]
+}
+
+@test "retention policy does not delete untagged manifests, only pr-* tags" {
+  delete_untagged=$(echo "$CONFIG_JSON" | jq '.storage.retention.policies[0].deleteUntagged')
+  [ "$delete_untagged" = "false" ]
+}
+
+@test "pr-* tags are matched before the catch-all so they age out instead of being kept forever" {
+  first_pattern=$(echo "$CONFIG_JSON" | jq -c '.storage.retention.policies[0].keepTags[0].patterns')
+  first_pushed_within=$(echo "$CONFIG_JSON" | jq -r '.storage.retention.policies[0].keepTags[0].pushedWithin')
+  second_pattern=$(echo "$CONFIG_JSON" | jq -c '.storage.retention.policies[0].keepTags[1].patterns')
+  keep_tags_count=$(echo "$CONFIG_JSON" | jq '.storage.retention.policies[0].keepTags | length')
+  [ "$first_pattern" = '["^pr-.+$"]' ]
+  [ "$first_pushed_within" = "120h" ]
+  [ "$second_pattern" = '[".*"]' ]
+  [ "$keep_tags_count" = "2" ]
+}
+
+@test "the catch-all keepTags entry has no age limit, so every non-pr-* tag is retained indefinitely" {
+  has_pushed_within=$(echo "$CONFIG_JSON" | jq '.storage.retention.policies[0].keepTags[1] | has("pushedWithin")')
+  has_pulled_within=$(echo "$CONFIG_JSON" | jq '.storage.retention.policies[0].keepTags[1] | has("pulledWithin")')
+  has_most_recently_pushed=$(echo "$CONFIG_JSON" | jq '.storage.retention.policies[0].keepTags[1] | has("mostRecentlyPushedCount")')
+  [ "$has_pushed_within" = "false" ]
+  [ "$has_pulled_within" = "false" ]
+  [ "$has_most_recently_pushed" = "false" ]
+}
